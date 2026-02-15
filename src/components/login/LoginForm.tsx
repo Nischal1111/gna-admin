@@ -1,0 +1,159 @@
+"use client"
+
+import Cookies from "js-cookie"
+import axios from "axios"
+import { EyeClosedIcon, EyeIcon, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import React, { useState, useEffect } from "react"
+import { toast } from "sonner"
+import { signIn } from "next-auth/react"
+
+const LoginForm: React.FC = () => {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [viewPassword, setViewPassword] = useState(false)
+
+  const router = useRouter()
+
+  useEffect(() => {
+    setEmail("")
+    setPassword("")
+    setError("")
+  }, [])
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Basic validation for email and password
+    if (!email || !password) {
+      setError("Please enter both email and password.")
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const result = await signIn("credentials", {
+        identifier: email,
+        password: password,
+        redirect: false,
+        callbackUrl: "/",
+      })
+
+      if (result?.error) {
+        setError(result.error)
+        return
+      } else if (result?.url) {
+        router.push(result?.url)
+      }
+    } catch (error: any) {
+      // Network or server errors
+      // console.error(error)
+      toast.error(
+        error.response?.data?.message || "An error occurred. Please try again."
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="relative flex items-center justify-center min-h-screen bg-gray-100 bg-[url('/going.png')] bg-cover bg-center">
+      {/* <!-- Dark overlay --> */}
+      <div className="absolute inset-0 bg-black opacity-70"></div>
+
+      {/* <!-- Login Form --> */}
+      <div className="relative w-full max-w-md p-8 bg-white shadow-md rounded-lg">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          GNA ADMIN LOGIN
+        </h2>
+
+        <form onSubmit={handleLogin}>
+          {/* Email Field */}
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              placeholder="admin@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-primary"
+              required
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="mb-4 relative">
+            <label
+              htmlFor="password"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Password
+            </label>
+            <div className="relative w-full">
+              <input
+                type={viewPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 pr-10 border border-gray-300 rounded focus:outline-none focus:border-primary"
+                required
+              />
+              <div
+                onClick={() => setViewPassword(!viewPassword)}
+                className={`absolute inset-y-0 right-3 flex items-center cursor-pointer`}
+              >
+                {/* Eye Icon for Password Visibility */}
+                {viewPassword ? (
+                  <EyeIcon className="w-6 h-6" />
+                ) : (
+                  <EyeClosedIcon className="w-6 h-6 " />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+
+          {/* Login Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full p-3 text-white bg-secondary hover:bg-primary rounded  transition-colors duration-200"
+          >
+            {loading ? (
+              <div className="flex justify-center items-center gap-2">
+                <Loader2 className="mr-2 animate-spin" /> Logging In
+              </div>
+            ) : (
+              <>Login</>
+            )}
+          </button>
+        </form>
+
+        {/* Forgot Password Link */}
+        <div className="mt-4 text-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-primary hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default LoginForm
