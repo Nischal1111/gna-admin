@@ -31,7 +31,7 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.457.0",
     "nanoid": "^5.0.8",
-    "next": "15.0.3",
+    "next": "15.0.7",
     "next-auth": "^4.24.11",
     "react": "^18.3.1",
     "react-animate-numbers": "^1.0.6",
